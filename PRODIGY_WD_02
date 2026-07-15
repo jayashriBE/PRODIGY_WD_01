@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chronograph</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Archivo:wght@500;600;800&display=swap');
+
+  :root{
+    --bg: #0b0d0c;
+    --panel: #141817;
+    --line: #263130;
+    --ink: #eef2f0;
+    --dim: #6f8280;
+    --accent: #4fe0b3;
+    --accent-dim: #1f4a3c;
+    --lap-flash: #ffb454;
+  }
+
+  *{ box-sizing: border-box; margin:0; padding:0; }
+
+  html,body{
+    height:100%;
+    background: var(--bg);
+    background-image:
+      radial-gradient(circle at 50% 0%, rgba(79,224,179,0.06), transparent 60%);
+    color: var(--ink);
+    font-family: 'Archivo', sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding: 32px 16px;
+  }
+
+  .device{
+    width: 100%;
+    max-width: 460px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    padding: 28px 26px 22px;
+    box-shadow: 0 40px 80px -30px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.03);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .device::before{
+    content:"";
+    position:absolute;
+    top:0; left:0; right:0;
+    height:1px;
+    background: linear-gradient(90deg, transparent, rgba(79,224,179,0.5), transparent);
+  }
+
+  .brand-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    margin-bottom: 22px;
+  }
+
+  .brand{
+    font-size: 12px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--dim);
+    font-weight: 600;
+  }
+
+  .status{
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--dim);
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+
+  .status-dot{
+    width:6px; height:6px;
+    border-radius:50%;
+    background: var(--dim);
+    transition: background .2s ease, box-shadow .2s ease;
+  }
+
+  .status-dot.running{
+    background: var(--accent);
+    box-shadow: 0 0 8px var(--accent);
+    animation: pulse 1s infinite ease-in-out;
+  }
+
+  @keyframes pulse{
+    0%,100%{ opacity:1; }
+    50%{ opacity: .4; }
+  }
+
+  .display{
+    text-align:center;
+    padding: 18px 0 22px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 20px;
+  }
+
+  .time{
+    font-family: 'Space Mono', monospace;
+    font-weight: 700;
+    font-size: clamp(48px, 12vw, 64px);
+    letter-spacing: 0.01em;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .time .centis{
+    color: var(--dim);
+    font-size: 0.5em;
+  }
+
+  .laps-summary{
+    margin-top: 10px;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--dim);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    min-height: 14px;
+  }
+
+  .controls{
+    display:grid;
+    grid-template-columns: 1fr 1.4fr 1fr;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  button{
+    font-family: 'Archivo', sans-serif;
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 14px 10px;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    background: #0f1312;
+    color: var(--ink);
+    cursor: pointer;
+    transition: transform .08s ease, border-color .15s ease, background .15s ease;
+  }
+
+  button:active{ transform: scale(0.96); }
+
+  button:disabled{
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+
+  #lapBtn:hover:not(:disabled){ border-color: var(--dim); }
+
+  #startBtn{
+    background: var(--accent);
+    color: #06120e;
+    border-color: var(--accent);
+    font-weight: 800;
+  }
+  #startBtn:hover:not(:disabled){ filter: brightness(1.08); }
+
+  #startBtn.is-running{
+    background: #211615;
+    color: #ff8a7a;
+    border-color: #5c2e28;
+  }
+
+  #resetBtn:hover:not(:disabled){ border-color: var(--dim); }
+
+  .laps{
+    max-height: 220px;
+    overflow-y: auto;
+  }
+
+  .laps::-webkit-scrollbar{ width: 6px; }
+  .laps::-webkit-scrollbar-thumb{ background: var(--line); border-radius: 3px; }
+
+  .lap-row{
+    display:grid;
+    grid-template-columns: 32px 1fr auto;
+    gap: 12px;
+    align-items: baseline;
+    padding: 10px 4px;
+    border-bottom: 1px solid rgba(38,49,48,0.6);
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    animation: slideIn .25s ease;
+  }
+
+  @keyframes slideIn{
+    from{ opacity:0; transform: translateY(-6px); }
+    to{ opacity:1; transform: translateY(0); }
+  }
+
+  .lap-row:last-child{ border-bottom: none; }
+
+  .lap-num{ color: var(--dim); }
+
+  .lap-split{ color: var(--ink); letter-spacing: 0.02em; }
+
+  .lap-total{ color: var(--dim); font-size: 11px; }
+
+  .lap-row.best .lap-split{ color: var(--accent); }
+  .lap-row.worst .lap-split{ color: var(--lap-flash); }
+
+  .empty-state{
+    text-align:center;
+    color: var(--dim);
+    font-size: 12px;
+    letter-spacing: 0.05em;
+    padding: 22px 0 6px;
+  }
+
+  @media (max-width: 380px){
+    .controls{ grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="device">
+    <div class="brand-row">
+      <span class="brand">Chronograph — 01</span>
+      <span class="status">
+        <span class="status-dot" id="statusDot"></span>
+        <span id="statusText">Ready</span>
+      </span>
+    </div>
+
+    <div class="display">
+      <div class="time" id="timeDisplay">00:00<span class="centis">.00</span></div>
+      <div class="laps-summary" id="lapsSummary"></div>
+    </div>
+
+    <div class="controls">
+      <button id="resetBtn" disabled>Reset</button>
+      <button id="startBtn">Start</button>
+      <button id="lapBtn" disabled>Lap</button>
+    </div>
+
+    <div class="laps" id="lapsContainer">
+      <div class="empty-state" id="emptyState">No laps recorded yet</div>
+    </div>
+  </div>
+
+<script>
+  const timeDisplay = document.getElementById('timeDisplay');
+  const startBtn = document.getElementById('startBtn');
+  const resetBtn = document.getElementById('resetBtn');
+  const lapBtn = document.getElementById('lapBtn');
+  const lapsContainer = document.getElementById('lapsContainer');
+  const emptyState = document.getElementById('emptyState');
+  const statusDot = document.getElementById('statusDot');
+  const statusText = document.getElementById('statusText');
+  const lapsSummary = document.getElementById('lapsSummary');
+
+  let running = false;
+  let startTimestamp = 0;
+  let elapsedBeforePause = 0;
+  let rafId = null;
+  let laps = [];
+
+  function formatTime(ms){
+    const totalCentis = Math.floor(ms / 10);
+    const centis = totalCentis % 100;
+    const totalSeconds = Math.floor(totalCentis / 100);
+    const seconds = totalSeconds % 60;
+    const minutes = Math.floor(totalSeconds / 60) % 60;
+    const hours = Math.floor(totalSeconds / 3600);
+
+    const pad = (n) => String(n).padStart(2, '0');
+
+    if(hours > 0){
+      return { main: `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`, centis: pad(centis) };
+    }
+    return { main: `${pad(minutes)}:${pad(seconds)}`, centis: pad(centis) };
+  }
+
+  function currentElapsed(){
+    if(running){
+      return elapsedBeforePause + (performance.now() - startTimestamp);
+    }
+    return elapsedBeforePause;
+  }
+
+  function render(){
+    const ms = currentElapsed();
+    const { main, centis } = formatTime(ms);
+    timeDisplay.innerHTML = `${main}<span class="centis">.${centis}</span>`;
+    if(running){
+      rafId = requestAnimationFrame(render);
+    }
+  }
+
+  function updateStatus(){
+    if(running){
+      statusDot.classList.add('running');
+      statusText.textContent = 'Running';
+    } else if(elapsedBeforePause > 0){
+      statusDot.classList.remove('running');
+      statusText.textContent = 'Paused';
+    } else {
+      statusDot.classList.remove('running');
+      statusText.textContent = 'Ready';
+    }
+  }
+
+  function start(){
+    running = true;
+    startTimestamp = performance.now();
+    startBtn.textContent = 'Pause';
+    startBtn.classList.add('is-running');
+    resetBtn.disabled = true;
+    lapBtn.disabled = false;
+    updateStatus();
+    render();
+  }
+
+  function pause(){
+    running = false;
+    elapsedBeforePause += performance.now() - startTimestamp;
+    cancelAnimationFrame(rafId);
+    startBtn.textContent = 'Resume';
+    startBtn.classList.remove('is-running');
+    resetBtn.disabled = false;
+    lapBtn.disabled = true;
+    updateStatus();
+  }
+
+  function reset(){
+    running = false;
+    elapsedBeforePause = 0;
+    laps = [];
+    cancelAnimationFrame(rafId);
+    startBtn.textContent = 'Start';
+    startBtn.classList.remove('is-running');
+    resetBtn.disabled = true;
+    lapBtn.disabled = true;
+    timeDisplay.innerHTML = `00:00<span class="centis">.00</span>`;
+    lapsContainer.innerHTML = '';
+    lapsContainer.appendChild(emptyState);
+    lapsSummary.textContent = '';
+    updateStatus();
+  }
+
+  function recordLap(){
+    const totalMs = currentElapsed();
+    const prevTotal = laps.length ? laps[laps.length - 1].totalMs : 0;
+    const splitMs = totalMs - prevTotal;
+    laps.push({ totalMs, splitMs });
+    renderLaps();
+  }
+
+  function renderLaps(){
+    if(laps.length === 0){
+      lapsContainer.innerHTML = '';
+      lapsContainer.appendChild(emptyState);
+      lapsSummary.textContent = '';
+      return;
+    }
+
+    emptyState.remove();
+
+    const splits = laps.map(l => l.splitMs);
+    const best = Math.min(...splits);
+    const worst = Math.max(...splits);
+    const showFlags = laps.length > 1;
+
+    lapsContainer.innerHTML = '';
+    for(let i = laps.length - 1; i >= 0; i--){
+      const lap = laps[i];
+      const row = document.createElement('div');
+      row.className = 'lap-row';
+      if(showFlags && lap.splitMs === best) row.classList.add('best');
+      if(showFlags && lap.splitMs === worst) row.classList.add('worst');
+
+      const splitFmt = formatTime(lap.splitMs);
+      const totalFmt = formatTime(lap.totalMs);
+
+      row.innerHTML = `
+        <span class="lap-num">${String(i + 1).padStart(2,'0')}</span>
+        <span class="lap-split">+${splitFmt.main}.${splitFmt.centis}</span>
+        <span class="lap-total">${totalFmt.main}.${totalFmt.centis}</span>
+      `;
+      lapsContainer.appendChild(row);
+    }
+
+    lapsSummary.textContent = `${laps.length} lap${laps.length > 1 ? 's' : ''} recorded`;
+  }
+
+  startBtn.addEventListener('click', () => {
+    if(running){ pause(); } else { start(); }
+  });
+
+  resetBtn.addEventListener('click', reset);
+  lapBtn.addEventListener('click', recordLap);
+
+  document.addEventListener('keydown', (e) => {
+    if(e.code === 'Space'){
+      e.preventDefault();
+      startBtn.click();
+    } else if(e.code === 'KeyL' && !lapBtn.disabled){
+      recordLap();
+    } else if(e.code === 'KeyR' && !resetBtn.disabled){
+      reset();
+    }
+  });
+</script>
+
+</body>
+</html>
