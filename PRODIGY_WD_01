@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meridian Coffee Roasters — Single-Origin, Small Batch</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,600;1,9..144,500&family=Work+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --espresso:#1c140f;
+    --espresso-soft:#2b1e16;
+    --parchment:#f2e8d8;
+    --parchment-dim:#e6d9c2;
+    --amber:#d9a441;
+    --amber-deep:#b8802a;
+    --forest:#4a5d3a;
+    --forest-deep:#374528;
+    --ink:#241a13;
+    --line: rgba(242,232,216,0.14);
+    --shadow: 0 10px 30px rgba(0,0,0,0.35);
+  }
+
+  *{box-sizing:border-box; margin:0; padding:0;}
+
+  html{scroll-behavior:smooth;}
+
+  body{
+    background:var(--espresso);
+    color:var(--parchment);
+    font-family:'Work Sans', sans-serif;
+    font-weight:400;
+    line-height:1.6;
+    overflow-x:hidden;
+  }
+
+  h1,h2,h3,h4{
+    font-family:'Fraunces', serif;
+    font-weight:500;
+    letter-spacing:-0.01em;
+    line-height:1.1;
+  }
+
+  .eyebrow{
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.72rem;
+    letter-spacing:0.18em;
+    text-transform:uppercase;
+    color:var(--amber);
+    display:flex;
+    align-items:center;
+    gap:0.6em;
+  }
+  .eyebrow::before{
+    content:"";
+    width:22px;
+    height:1px;
+    background:var(--amber);
+    display:inline-block;
+  }
+
+  a{color:inherit; text-decoration:none;}
+  img{max-width:100%; display:block;}
+  .wrap{max-width:1180px; margin:0 auto; padding:0 clamp(20px,5vw,48px);}
+  section{padding:clamp(80px,10vw,140px) 0;}
+
+  /* ============ NAV ============ */
+  header.nav{
+    position:fixed;
+    top:0; left:0; right:0;
+    z-index:1000;
+    padding:22px 0;
+    background:transparent;
+    border-bottom:1px solid transparent;
+    transition:background 0.4s ease, border-color 0.4s ease, padding 0.35s ease, box-shadow 0.4s ease;
+  }
+  header.nav.scrolled{
+    background:rgba(242,232,216,0.96);
+    backdrop-filter: blur(10px);
+    border-bottom:1px solid rgba(28,20,15,0.08);
+    padding:13px 0;
+    box-shadow:var(--shadow);
+  }
+
+  .nav-inner{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    max-width:1180px;
+    margin:0 auto;
+    padding:0 clamp(20px,5vw,48px);
+  }
+
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-family:'Fraunces', serif;
+    font-size:1.15rem;
+    font-weight:600;
+    color:var(--parchment);
+    transition:color 0.4s ease;
+  }
+  .brand .mark{
+    width:30px; height:30px;
+    border-radius:50%;
+    border:1.5px solid var(--amber);
+    display:grid;
+    place-items:center;
+    position:relative;
+    transition:border-color 0.4s ease, transform 0.5s ease;
+  }
+  .brand .mark::after{
+    content:"";
+    width:12px; height:12px;
+    border-radius:50%;
+    background:var(--amber);
+    transition:background 0.4s ease;
+  }
+  header.nav.scrolled .brand{color:var(--ink);}
+  header.nav.scrolled .brand .mark{border-color:var(--amber-deep);}
+  header.nav.scrolled .brand .mark::after{background:var(--amber-deep);}
+
+  nav.menu{display:flex; align-items:center; gap:2px;}
+  nav.menu a{
+    position:relative;
+    font-size:0.87rem;
+    font-weight:500;
+    letter-spacing:0.01em;
+    padding:10px 16px;
+    color:var(--parchment-dim);
+    border-radius:20px;
+    transition:color 0.3s ease, background 0.3s ease, transform 0.25s ease;
+  }
+  header.nav.scrolled nav.menu a{color:var(--espresso-soft);}
+
+  nav.menu a::after{
+    content:"";
+    position:absolute;
+    left:16px; right:16px; bottom:6px;
+    height:1.5px;
+    background:var(--amber);
+    transform:scaleX(0);
+    transform-origin:left;
+    transition:transform 0.3s ease;
+  }
+  nav.menu a:hover{
+    color:var(--amber);
+    background:rgba(217,164,65,0.1);
+    transform:translateY(-1px);
+  }
+  header.nav.scrolled nav.menu a:hover{
+    color:var(--amber-deep);
+    background:rgba(184,128,42,0.08);
+  }
+  nav.menu a:hover::after{transform:scaleX(1);}
+
+  nav.menu a.cta{
+    background:var(--amber);
+    color:var(--espresso) !important;
+    font-weight:600;
+    padding:10px 20px;
+    margin-left:8px;
+  }
+  nav.menu a.cta::after{display:none;}
+  nav.menu a.cta:hover{
+    background:var(--amber-deep);
+    transform:translateY(-2px);
+    box-shadow:0 8px 18px rgba(217,164,65,0.35);
+  }
+
+  .nav-toggle{display:none;}
+
+  /* ============ HERO ============ */
+  .hero{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    position:relative;
+    padding-top:120px;
+    background:
+      radial-gradient(ellipse 80% 60% at 15% 0%, rgba(217,164,65,0.14), transparent 60%),
+      radial-gradient(ellipse 60% 50% at 90% 90%, rgba(74,93,58,0.18), transparent 60%),
+      var(--espresso);
+  }
+  .hero-grid{
+    display:grid;
+    grid-template-columns:1.1fr 0.9fr;
+    gap:60px;
+    align-items:center;
+    width:100%;
+  }
+  .hero h1{
+    font-size:clamp(2.6rem, 5.2vw, 4.4rem);
+    margin:18px 0 26px;
+  }
+  .hero h1 em{
+    font-style:italic;
+    color:var(--amber);
+  }
+  .hero p.lede{
+    font-size:1.1rem;
+    color:var(--parchment-dim);
+    max-width:46ch;
+    margin-bottom:34px;
+  }
+  .hero-actions{display:flex; gap:14px; flex-wrap:wrap;}
+  .btn{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:14px 26px;
+    border-radius:30px;
+    font-weight:600;
+    font-size:0.92rem;
+    transition:transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+  }
+  .btn-primary{background:var(--amber); color:var(--espresso);}
+  .btn-primary:hover{transform:translateY(-3px); box-shadow:0 12px 24px rgba(217,164,65,0.3); background:#e5b25a;}
+  .btn-ghost{border:1px solid var(--line); color:var(--parchment);}
+  .btn-ghost:hover{border-color:var(--amber); color:var(--amber); transform:translateY(-3px);}
+
+  /* Roast curve — signature element */
+  .roast-panel{
+    background:var(--espresso-soft);
+    border:1px solid var(--line);
+    border-radius:18px;
+    padding:26px 26px 20px;
+  }
+  .roast-panel .rp-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    margin-bottom:14px;
+    font-family:'JetBrains Mono', monospace;
+  }
+  .rp-head .label{font-size:0.7rem; color:var(--parchment-dim); letter-spacing:0.08em; text-transform:uppercase;}
+  .rp-head .temp{font-size:1.5rem; color:var(--amber); font-weight:500;}
+  #roastCurve{width:100%; height:auto; overflow:visible;}
+  .rp-foot{
+    display:flex;
+    justify-content:space-between;
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.7rem;
+    color:var(--parchment-dim);
+    margin-top:10px;
+    letter-spacing:0.04em;
+  }
+
+  /* ============ MARQUEE STRIP ============ */
+  .strip{
+    border-top:1px solid var(--line);
+    border-bottom:1px solid var(--line);
+    padding:16px 0;
+    overflow:hidden;
+    white-space:nowrap;
+    background:var(--espresso-soft);
+  }
+  .strip-track{
+    display:inline-block;
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.78rem;
+    letter-spacing:0.12em;
+    color:var(--parchment-dim);
+    animation:scrollStrip 28s linear infinite;
+  }
+  .strip-track span{margin:0 26px; color:var(--amber);}
+  @keyframes scrollStrip{ from{transform:translateX(0);} to{transform:translateX(-50%);} }
+
+  /* ============ SECTION HEADERS ============ */
+  .sec-head{max-width:640px; margin-bottom:56px;}
+  .sec-head h2{font-size:clamp(1.9rem,3.4vw,2.6rem); margin-top:14px;}
+  .sec-head p{color:var(--parchment-dim); margin-top:14px; font-size:1.02rem;}
+
+  /* ============ ORIGINS ============ */
+  .origin-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:22px;
+  }
+  .origin-card{
+    background:var(--espresso-soft);
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:28px;
+    transition:transform 0.35s ease, border-color 0.35s ease, background 0.35s ease;
+  }
+  .origin-card:hover{
+    transform:translateY(-6px);
+    border-color:var(--amber);
+    background:#332419;
+  }
+  .origin-card .alt{
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.72rem;
+    color:var(--amber);
+    letter-spacing:0.06em;
+  }
+  .origin-card h3{font-size:1.35rem; margin:10px 0 8px;}
+  .origin-card p{color:var(--parchment-dim); font-size:0.93rem;}
+  .tag-row{display:flex; gap:8px; margin-top:16px; flex-wrap:wrap;}
+  .tag{
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.66rem;
+    letter-spacing:0.05em;
+    padding:5px 10px;
+    border-radius:20px;
+    background:rgba(74,93,58,0.25);
+    color:#a7c08e;
+    border:1px solid rgba(74,93,58,0.4);
+  }
+
+  /* ============ PROCESS (real sequence, numbering justified) ============ */
+  .process{background:var(--ink);}
+  .process-list{
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:0;
+    counter-reset:step;
+    border-top:1px solid var(--line);
+  }
+  .step{
+    padding:28px 18px 0;
+    border-right:1px solid var(--line);
+    position:relative;
+  }
+  .step:last-child{border-right:none;}
+  .step .num{
+    font-family:'JetBrains Mono', monospace;
+    color:var(--amber);
+    font-size:0.85rem;
+    counter-increment:step;
+  }
+  .step .num::before{content: counter(step, decimal-leading-zero) " / ";}
+  .step h4{font-size:1.05rem; margin:12px 0 8px;}
+  .step p{font-size:0.85rem; color:var(--parchment-dim);}
+
+  /* ============ BEANS GRID ============ */
+  .bean-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:24px;
+  }
+  .bean-card{
+    border:1px solid var(--line);
+    border-radius:16px;
+    overflow:hidden;
+    background:var(--espresso-soft);
+    transition:transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  .bean-card:hover{transform:translateY(-6px); box-shadow:var(--shadow);}
+  .bean-swatch{
+    height:130px;
+    position:relative;
+  }
+  .bean-card .bean-body{padding:22px;}
+  .bean-card h3{font-size:1.15rem; margin-bottom:6px;}
+  .bean-meta{
+    display:flex;
+    justify-content:space-between;
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.7rem;
+    color:var(--parchment-dim);
+    margin-top:14px;
+    padding-top:14px;
+    border-top:1px solid var(--line);
+  }
+  .price{color:var(--amber); font-weight:600;}
+
+  /* ============ RESERVE PROGRAM ============ */
+  .reserve{
+    background: linear-gradient(180deg, var(--espresso) 0%, #241a13 100%);
+    border-top:1px solid var(--line);
+    border-bottom:1px solid var(--line);
+  }
+  .reserve-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:22px;
+  }
+  .plan{
+    background:var(--espresso-soft);
+    border:1px solid var(--line);
+    border-radius:18px;
+    padding:32px 26px;
+    display:flex;
+    flex-direction:column;
+    transition:transform 0.3s ease, border-color 0.3s ease;
+  }
+  .plan:hover{transform:translateY(-6px); border-color:var(--amber);}
+  .plan.featured{
+    border-color:var(--amber);
+    background:#33240f;
+    position:relative;
+  }
+  .plan.featured::before{
+    content:"Most Popular";
+    position:absolute;
+    top:-13px; left:26px;
+    background:var(--amber);
+    color:var(--espresso);
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.62rem;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    padding:5px 12px;
+    border-radius:20px;
+    font-weight:600;
+  }
+  .plan h3{font-size:1.3rem;}
+  .plan .price-line{
+    font-family:'JetBrains Mono', monospace;
+    font-size:2rem;
+    color:var(--amber);
+    margin:14px 0 6px;
+  }
+  .plan .price-line span{font-size:0.85rem; color:var(--parchment-dim);}
+  .plan ul{list-style:none; margin:18px 0 26px; flex-grow:1;}
+  .plan li{
+    font-size:0.9rem;
+    color:var(--parchment-dim);
+    padding:8px 0;
+    border-top:1px solid var(--line);
+    display:flex;
+    gap:10px;
+  }
+  .plan li::before{content:"—"; color:var(--amber);}
+
+  /* ============ FOOTER / VISIT ============ */
+  footer{
+    background:var(--ink);
+    padding:70px 0 34px;
+  }
+  .foot-grid{
+    display:grid;
+    grid-template-columns:1.3fr 1fr 1fr 1fr;
+    gap:40px;
+    padding-bottom:50px;
+    border-bottom:1px solid var(--line);
+  }
+  .foot-grid h4{font-size:0.95rem; margin-bottom:16px; color:var(--parchment);}
+  .foot-grid a, .foot-grid p{
+    display:block;
+    font-size:0.88rem;
+    color:var(--parchment-dim);
+    margin-bottom:10px;
+    transition:color 0.25s ease;
+  }
+  .foot-grid a:hover{color:var(--amber);}
+  .bottom-row{
+    display:flex;
+    justify-content:space-between;
+    padding-top:26px;
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.72rem;
+    color:var(--parchment-dim);
+    flex-wrap:wrap;
+    gap:10px;
+  }
+
+  /* scroll-reveal */
+  .reveal{opacity:0; transform:translateY(24px); transition:opacity 0.7s ease, transform 0.7s ease;}
+  .reveal.in{opacity:1; transform:translateY(0);}
+
+  @media (max-width:860px){
+    .hero-grid{grid-template-columns:1fr;}
+    .origin-grid, .bean-grid, .reserve-grid{grid-template-columns:1fr;}
+    .process-list{grid-template-columns:1fr; }
+    .step{border-right:none; border-bottom:1px solid var(--line); padding-bottom:20px;}
+    .foot-grid{grid-template-columns:1fr 1fr;}
+    nav.menu{
+      position:fixed; top:64px; right:0; left:0;
+      flex-direction:column; align-items:stretch;
+      background:var(--espresso); border-top:1px solid var(--line);
+      padding:14px; gap:6px;
+      transform:translateY(-130%);
+      transition:transform 0.35s ease;
+    }
+    header.nav.scrolled nav.menu{background:var(--parchment);}
+    nav.menu.open{transform:translateY(0);}
+    nav.menu a{padding:14px 16px;}
+    .nav-toggle{
+      display:block; background:none; border:none; color:var(--parchment);
+      font-size:1.4rem; cursor:pointer;
+    }
+    header.nav.scrolled .nav-toggle{color:var(--ink);}
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:0.001ms !important; transition-duration:0.001ms !important;}
+    html{scroll-behavior:auto;}
+  }
+</style>
+</head>
+<body>
+
+<header class="nav" id="siteNav">
+  <div class="nav-inner">
+    <a href="#top" class="brand"><span class="mark"></span>Meridian</a>
+    <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">☰</button>
+    <nav class="menu" id="navMenu">
+      <a href="#origins">Origins</a>
+      <a href="#process">Process</a>
+      <a href="#beans">Beans</a>
+      <a href="#reserve">Reserve Program</a>
+      <a href="#visit">Visit</a>
+      <a href="#reserve" class="cta">Join Reserve</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div>
+        <div class="eyebrow">Small-batch roastery — est. 2016</div>
+        <h1>Coffee traced to <em>one farm</em>, roasted to <em>one curve</em>.</h1>
+        <p class="lede">Meridian works directly with eleven family farms across three growing regions. Every lot is roasted in batches under twelve kilos so the profile matches the bean, not the other way around.</p>
+        <div class="hero-actions">
+          <a href="#reserve" class="btn btn-primary">Join the Reserve Program</a>
+          <a href="#beans" class="btn btn-ghost">Shop current lots</a>
+        </div>
+      </div>
+
+      <div class="roast-panel reveal">
+        <div class="rp-head">
+          <span class="label">Live roast · Lot 214 · Yirgacheffe</span>
+          <span class="temp" id="curveTemp">208°C</span>
+        </div>
+        <svg id="roastCurve" viewBox="0 0 420 200" preserveAspectRatio="none">
+          <line x1="0" y1="150" x2="420" y2="150" stroke="rgba(242,232,216,0.08)" stroke-width="1"/>
+          <line x1="0" y1="100" x2="420" y2="100" stroke="rgba(242,232,216,0.08)" stroke-width="1"/>
+          <line x1="0" y1="50" x2="420" y2="50" stroke="rgba(242,232,216,0.08)" stroke-width="1"/>
+          <path id="curvePath" d="" fill="none" stroke="#d9a441" stroke-width="2.5" stroke-linecap="round"/>
+          <circle id="curveDot" r="4.5" fill="#f2e8d8"/>
+        </svg>
+        <div class="rp-foot">
+          <span>0:00 charge</span>
+          <span id="curveTime">6:40 first crack</span>
+          <span>11:20 drop</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="strip">
+    <div class="strip-track">
+      <span>ETHIOPIA · YIRGACHEFFE</span> IMPORTED DIRECT <span>COLOMBIA · HUILA</span> ROASTED WEEKLY <span>KENYA · NYERI</span> SHIPPED WITHIN 48 HOURS <span>ETHIOPIA · YIRGACHEFFE</span> IMPORTED DIRECT <span>COLOMBIA · HUILA</span> ROASTED WEEKLY <span>KENYA · NYERI</span> SHIPPED WITHIN 48 HOURS
+    </div>
+  </div>
+
+  <section id="origins">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <div class="eyebrow">Where it comes from</div>
+        <h2>Three regions, eleven farms, one relationship each.</h2>
+        <p>We buy the same lots from the same growers every season, at prices set before harvest. No open-market blending, no anonymous "product of" sourcing.</p>
+      </div>
+      <div class="origin-grid">
+        <div class="origin-card reveal">
+          <div class="alt">1,900–2,100M · GEDEO ZONE</div>
+          <h3>Yirgacheffe, Ethiopia</h3>
+          <p>Washed and natural lots from the Konga cooperative. Floral, citrus-forward, grown under native shade trees.</p>
+          <div class="tag-row"><span class="tag">washed</span><span class="tag">heirloom</span></div>
+        </div>
+        <div class="origin-card reveal">
+          <div class="alt">1,700M · HUILA DEPARTMENT</div>
+          <h3>Huila, Colombia</h3>
+          <p>Caturra and Castillo from the Rodríguez family farm, in production since 1974. Stone fruit, brown sugar, clean finish.</p>
+          <div class="tag-row"><span class="tag">honey process</span><span class="tag">family farm</span></div>
+        </div>
+        <div class="origin-card reveal">
+          <div class="alt">1,750M · NYERI COUNTY</div>
+          <h3>Nyeri, Kenya</h3>
+          <p>SL28 and SL34 varietals from red volcanic soil. Blackcurrant acidity with a heavy, syrupy body.</p>
+          <div class="tag-row"><span class="tag">double washed</span><span class="tag">peaberry</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="process" class="process">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <div class="eyebrow">Cherry to cup</div>
+        <h2>The same five stages, every lot, no shortcuts.</h2>
+      </div>
+    </div>
+    <div class="wrap">
+      <div class="process-list">
+        <div class="step reveal"><div class="num"></div><h4>Harvest</h4><p>Hand-picked, ripe cherry only. Unripe fruit is left on the branch.</p></div>
+        <div class="step reveal"><div class="num"></div><h4>Process</h4><p>Washed, honey, or natural — chosen per lot to suit the varietal.</p></div>
+        <div class="step reveal"><div class="num"></div><h4>Dry & rest</h4><p>Raised beds, 14–28 days, then rested in GrainPro for 60 days minimum.</p></div>
+        <div class="step reveal"><div class="num"></div><h4>Roast</h4><p>Batches under 12kg, profiled per lot, logged on a live curve like the one above.</p></div>
+        <div class="step reveal"><div class="num"></div><h4>Cup & ship</h4><p>Every batch cupped blind before release. Bags go out within 48 hours of roast.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="beans">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <div class="eyebrow">Currently roasting</div>
+        <h2>This week's lots.</h2>
+        <p>Six bags released each Monday. Once a lot sells out, it doesn't come back until next harvest.</p>
+      </div>
+      <div class="bean-grid">
+        <div class="bean-card reveal">
+          <div class="bean-swatch" style="background:linear-gradient(135deg,#7a5a34,#c99a4a);"></div>
+          <div class="bean-body">
+            <h3>Konga Washed</h3>
+            <p style="color:var(--parchment-dim); font-size:0.9rem;">Bergamot, white peach, jasmine. Light roast.</p>
+            <div class="bean-meta"><span>250G BAG</span><span class="price">₹1,750</span></div>
+          </div>
+        </div>
+ 
