@@ -1,0 +1,575 @@
+!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Noughts &amp; Crosses</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Space+Mono:wght@400;700&display=swap');
+
+  :root{
+    --board-bg: #24352c;
+    --board-bg-2: #1b2921;
+    --chalk: #eef4ee;
+    --chalk-dim: #9db3a7;
+    --chalk-x: #ffd166;
+    --chalk-o: #ff8fa3;
+    --line: rgba(238,244,238,0.16);
+    --frame: #16211b;
+  }
+
+  *{ box-sizing: border-box; margin:0; padding:0; }
+
+  html,body{
+    min-height:100%;
+    background: var(--frame);
+    background-image:
+      radial-gradient(circle at 50% -10%, rgba(238,244,238,0.05), transparent 55%);
+    color: var(--chalk);
+    font-family: 'Space Mono', monospace;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding: 28px 14px;
+  }
+
+  .board-wrap{
+    width:100%;
+    max-width: 460px;
+  }
+
+  .frame{
+    background: linear-gradient(180deg, var(--board-bg), var(--board-bg-2));
+    border-radius: 14px;
+    padding: 26px 24px 22px;
+    box-shadow:
+      0 30px 60px -20px rgba(0,0,0,0.65),
+      inset 0 0 0 10px #10180f,
+      inset 0 0 0 12px #3a2a1c;
+    position: relative;
+  }
+
+  header{
+    display:flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 18px;
+  }
+
+  .title{
+    font-family: 'Caveat', cursive;
+    font-weight: 700;
+    font-size: 34px;
+    letter-spacing: 0.01em;
+    color: var(--chalk);
+    line-height: 1;
+  }
+
+  .subtitle{
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--chalk-dim);
+    margin-top: 4px;
+  }
+
+  .turn-badge{
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--chalk-dim);
+    text-align: right;
+  }
+
+  .turn-badge .mark{
+    display:block;
+    font-family: 'Caveat', cursive;
+    font-size: 26px;
+    font-weight: 700;
+    margin-top: 2px;
+  }
+
+  .turn-badge .mark.x{ color: var(--chalk-x); }
+  .turn-badge .mark.o{ color: var(--chalk-o); }
+
+  .mode-row{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 18px;
+  }
+
+  .mode-btn{
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 9px 6px;
+    border-radius: 7px;
+    border: 1px dashed var(--line);
+    background: transparent;
+    color: var(--chalk-dim);
+    cursor: pointer;
+    transition: all .15s ease;
+  }
+
+  .mode-btn.active{
+    color: var(--board-bg-2);
+    background: var(--chalk);
+    border-color: var(--chalk);
+  }
+
+  .mode-btn:hover:not(.active){
+    color: var(--chalk);
+    border-color: var(--chalk-dim);
+  }
+
+  .board{
+    position: relative;
+    aspect-ratio: 1;
+    margin-bottom: 18px;
+  }
+
+  .grid-lines{
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+
+  .grid-lines path{
+    fill: none;
+    stroke: var(--chalk);
+    stroke-width: 3;
+    stroke-linecap: round;
+    opacity: 0.55;
+  }
+
+  .cells{
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+  }
+
+  .cell{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 14%;
+  }
+
+  .cell:disabled{ cursor: default; }
+
+  .cell svg{
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+
+  .cell svg path, .cell svg circle{
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .mark-x path{
+    stroke: var(--chalk-x);
+    stroke-width: 9;
+    stroke-dasharray: 140;
+    stroke-dashoffset: 140;
+    animation: draw 0.32s ease forwards;
+    filter: drop-shadow(0 0 6px rgba(255,209,102,0.35));
+  }
+  .mark-x path.stroke2{ animation-delay: 0.18s; }
+
+  .mark-o circle{
+    stroke: var(--chalk-o);
+    stroke-width: 9;
+    stroke-dasharray: 300;
+    stroke-dashoffset: 300;
+    animation: draw-o 0.4s ease forwards;
+    filter: drop-shadow(0 0 6px rgba(255,143,163,0.35));
+  }
+
+  @keyframes draw{
+    to{ stroke-dashoffset: 0; }
+  }
+  @keyframes draw-o{
+    to{ stroke-dashoffset: 0; }
+  }
+
+  .win-line{
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 3;
+    pointer-events: none;
+  }
+
+  .win-line line{
+    stroke: var(--chalk);
+    stroke-width: 6;
+    stroke-linecap: round;
+    stroke-dasharray: 400;
+    stroke-dashoffset: 400;
+  }
+
+  .win-line line.show{
+    animation: draw-win 0.45s ease forwards;
+  }
+
+  @keyframes draw-win{
+    to{ stroke-dashoffset: 0; }
+  }
+
+  .status-line{
+    text-align: center;
+    font-family: 'Caveat', cursive;
+    font-size: 22px;
+    color: var(--chalk-dim);
+    min-height: 30px;
+    margin-bottom: 14px;
+  }
+
+  .status-line.win{ color: var(--chalk); }
+
+  .footer-row{
+    display:flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .score{
+    display:flex;
+    gap: 16px;
+    font-size: 12px;
+    color: var(--chalk-dim);
+    letter-spacing: 0.06em;
+  }
+
+  .score span.num{
+    color: var(--chalk);
+    font-weight: 700;
+  }
+
+  .score .x-score .num{ color: var(--chalk-x); }
+  .score .o-score .num{ color: var(--chalk-o); }
+
+  .reset-btn{
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 9px 16px;
+    border-radius: 7px;
+    border: 1px solid var(--line);
+    background: transparent;
+    color: var(--chalk);
+    cursor: pointer;
+    transition: all .15s ease;
+  }
+
+  .reset-btn:hover{ border-color: var(--chalk); background: rgba(238,244,238,0.06); }
+
+  @media (max-width: 360px){
+    .title{ font-size: 28px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="board-wrap">
+  <div class="frame">
+    <header>
+      <div>
+        <div class="title">Noughts &amp; Crosses</div>
+        <div class="subtitle">Chalkboard Edition</div>
+      </div>
+      <div class="turn-badge">
+        <span id="turnLabel">Turn</span>
+        <span class="mark x" id="turnMark">X</span>
+      </div>
+    </header>
+
+    <div class="mode-row">
+      <button class="mode-btn active" id="mode2p">Two Player</button>
+      <button class="mode-btn" id="modeAI">Vs Computer</button>
+    </div>
+
+    <div class="board" id="board">
+      <svg class="grid-lines" viewBox="0 0 300 300" preserveAspectRatio="none">
+        <path d="M 100 12 L 100 288" />
+        <path d="M 200 12 L 200 288" />
+        <path d="M 12 100 L 288 100" />
+        <path d="M 12 200 L 288 200" />
+      </svg>
+      <div class="cells" id="cells"></div>
+      <svg class="win-line" viewBox="0 0 300 300" preserveAspectRatio="none" id="winLineSvg">
+        <line id="winLine" x1="0" y1="0" x2="0" y2="0" />
+      </svg>
+    </div>
+
+    <div class="status-line" id="statusLine">X goes first</div>
+
+    <div class="footer-row">
+      <div class="score">
+        <span class="x-score">X <span class="num" id="scoreX">0</span></span>
+        <span>·</span>
+        <span class="o-score">O <span class="num" id="scoreO">0</span></span>
+        <span>·</span>
+        <span>Draws <span class="num" id="scoreD">0</span></span>
+      </div>
+      <button class="reset-btn" id="resetBtn">New Round</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const cellsEl = document.getElementById('cells');
+  const statusLine = document.getElementById('statusLine');
+  const turnMark = document.getElementById('turnMark');
+  const turnLabel = document.getElementById('turnLabel');
+  const resetBtn = document.getElementById('resetBtn');
+  const mode2p = document.getElementById('mode2p');
+  const modeAI = document.getElementById('modeAI');
+  const winLine = document.getElementById('winLine');
+  const scoreXEl = document.getElementById('scoreX');
+  const scoreOEl = document.getElementById('scoreO');
+  const scoreDEl = document.getElementById('scoreD');
+
+  let board = Array(9).fill(null);
+  let currentPlayer = 'X';
+  let gameActive = true;
+  let vsAI = false;
+  let scores = { X: 0, O: 0, D: 0 };
+
+  const WIN_LINES = [
+    [0,1,2], [3,4,5], [6,7,8],
+    [0,3,6], [1,4,7], [2,5,8],
+    [0,4,8], [2,4,6]
+  ];
+
+  const LINE_COORDS = {
+    '0,1,2': [50,50,250,50],
+    '3,4,5': [50,150,250,150],
+    '6,7,8': [50,250,250,250],
+    '0,3,6': [50,50,50,250],
+    '1,4,7': [150,50,150,250],
+    '2,5,8': [250,50,250,250],
+    '0,4,8': [35,35,265,265],
+    '2,4,6': [265,35,35,265],
+  };
+
+  function buildBoard(){
+    cellsEl.innerHTML = '';
+    for(let i = 0; i < 9; i++){
+      const btn = document.createElement('button');
+      btn.className = 'cell';
+      btn.dataset.index = i;
+      btn.addEventListener('click', () => handleMove(i));
+      cellsEl.appendChild(btn);
+    }
+  }
+
+  function markSVG(player){
+    if(player === 'X'){
+      return `<svg viewBox="0 0 100 100" class="mark-x">
+        <path class="stroke1" d="M 22 22 L 78 78" />
+        <path class="stroke2" d="M 78 22 L 22 78" />
+      </svg>`;
+    }
+    return `<svg viewBox="0 0 100 100" class="mark-o">
+      <circle cx="50" cy="50" r="32" />
+    </svg>`;
+  }
+
+  function handleMove(index){
+    if(!gameActive || board[index]) return;
+    placeMark(index, currentPlayer);
+
+    const result = checkResult();
+    if(result){
+      finishGame(result);
+      return;
+    }
+
+    switchTurn();
+
+    if(vsAI && gameActive && currentPlayer === 'O'){
+      setTimeout(aiMove, 400);
+    }
+  }
+
+  function placeMark(index, player){
+    board[index] = player;
+    const cell = cellsEl.children[index];
+    cell.innerHTML = markSVG(player);
+    cell.disabled = true;
+  }
+
+  function switchTurn(){
+    currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+    turnMark.textContent = currentPlayer;
+    turnMark.className = 'mark ' + currentPlayer.toLowerCase();
+    turnLabel.textContent = 'Turn';
+    statusLine.textContent = `${currentPlayer}'s move`;
+    statusLine.classList.remove('win');
+  }
+
+  function checkResult(){
+    for(const line of WIN_LINES){
+      const [a,b,c] = line;
+      if(board[a] && board[a] === board[b] && board[a] === board[c]){
+        return { winner: board[a], line };
+      }
+    }
+    if(board.every(cell => cell)){
+      return { winner: null, line: null };
+    }
+    return null;
+  }
+
+  function finishGame(result){
+    gameActive = false;
+    if(result.winner){
+      scores[result.winner]++;
+      updateScores();
+      statusLine.textContent = `${result.winner} wins the round`;
+      statusLine.classList.add('win');
+      drawWinLine(result.line);
+    } else {
+      scores.D++;
+      updateScores();
+      statusLine.textContent = `It's a draw`;
+      statusLine.classList.add('win');
+    }
+    disableAllCells();
+  }
+
+  function drawWinLine(line){
+    const key = line.join(',');
+    const coords = LINE_COORDS[key];
+    if(!coords) return;
+    winLine.setAttribute('x1', coords[0]);
+    winLine.setAttribute('y1', coords[1]);
+    winLine.setAttribute('x2', coords[2]);
+    winLine.setAttribute('y2', coords[3]);
+    winLine.classList.add('show');
+  }
+
+  function disableAllCells(){
+    [...cellsEl.children].forEach(c => c.disabled = true);
+  }
+
+  function updateScores(){
+    scoreXEl.textContent = scores.X;
+    scoreOEl.textContent = scores.O;
+    scoreDEl.textContent = scores.D;
+  }
+
+  function newRound(){
+    board = Array(9).fill(null);
+    currentPlayer = 'X';
+    gameActive = true;
+    buildBoard();
+    turnMark.textContent = 'X';
+    turnMark.className = 'mark x';
+    turnLabel.textContent = 'Turn';
+    statusLine.textContent = "X goes first";
+    statusLine.classList.remove('win');
+    winLine.classList.remove('show');
+    winLine.setAttribute('x1', 0);
+    winLine.setAttribute('y1', 0);
+    winLine.setAttribute('x2', 0);
+    winLine.setAttribute('y2', 0);
+  }
+
+  // --- Unbeatable AI (minimax) ---
+  function aiMove(){
+    if(!gameActive) return;
+    const best = minimax(board, 'O').index;
+    if(best === undefined || best === null) return;
+    placeMark(best, 'O');
+    const result = checkResult();
+    if(result){
+      finishGame(result);
+    } else {
+      switchTurn();
+    }
+  }
+
+  function availableMoves(bd){
+    return bd.reduce((acc, v, i) => { if(!v) acc.push(i); return acc; }, []);
+  }
+
+  function evaluateBoard(bd){
+    for(const line of WIN_LINES){
+      const [a,b,c] = line;
+      if(bd[a] && bd[a] === bd[b] && bd[a] === bd[c]){
+        return bd[a];
+      }
+    }
+    return null;
+  }
+
+  function minimax(bd, player){
+    const winner = evaluateBoard(bd);
+    if(winner === 'O') return { score: 10 };
+    if(winner === 'X') return { score: -10 };
+    if(availableMoves(bd).length === 0) return { score: 0 };
+
+    const moves = [];
+    for(const idx of availableMoves(bd)){
+      const newBoard = bd.slice();
+      newBoard[idx] = player;
+      const result = minimax(newBoard, player === 'O' ? 'X' : 'O');
+      moves.push({ index: idx, score: result.score });
+    }
+
+    if(player === 'O'){
+      return moves.reduce((best, m) => m.score > best.score ? m : best);
+    } else {
+      return moves.reduce((best, m) => m.score < best.score ? m : best);
+    }
+  }
+
+  mode2p.addEventListener('click', () => {
+    vsAI = false;
+    mode2p.classList.add('active');
+    modeAI.classList.remove('active');
+    newRound();
+    scores = { X: 0, O: 0, D: 0 };
+    updateScores();
+  });
+
+  modeAI.addEventListener('click', () => {
+    vsAI = true;
+    modeAI.classList.add('active');
+    mode2p.classList.remove('active');
+    newRound();
+    scores = { X: 0, O: 0, D: 0 };
+    updateScores();
+  });
+
+  resetBtn.addEventListener('click', newRound);
+
+  buildBoard();
+</script>
+
+</body>
+</html>
